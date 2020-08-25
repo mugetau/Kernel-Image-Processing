@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageEnhancement.Views"
         mc:Ignorable="d"
-        Title="CIPA" Height="720" Width="815" ResizeMode="NoResize">
+        Title="CIPA" Height="720" Width="815" ResizeMode="NoResize" Icon="/Icons/icon.ico">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20"/>
@@ -23,25 +23,43 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="22"/>
+            <RowDefinition Height="25"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="25"/>
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
         <!-- Source Input -->
         <Label Grid.Row="1" Grid.Column="1" Margin="-5,0,0,0">Source:</Label>
-        <TextBox x:Name="Source" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Width="650"></TextBox>
+        <TextBox IsReadOnly="True" x:Name="TextSource" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Width="650"></TextBox>
         <Button x:Name="Browse" Grid.Row="2" Grid.Column="4" Margin="5,0,0,0">Browse</Button>
 
         <!-- Destination Input -->
         <Label Grid.Row="4" Grid.Column="1" Margin="-5,0,0,0">Destination:</Label>
-        <TextBox x:Name="Destination" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Width="650"></TextBox>
+        <TextBox IsReadOnly="True" x:Name="TextDestination" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Width="650"></TextBox>
         <Button x:Name="Select" Grid.Row="5" Grid.Column="4"  Margin="5,0,0,0">Select</Button>
-        
+
+        <!-- Filters -->
+        <Label Grid.Row="6" Grid.Column="1" Margin="-5,0,0,0">Filter:</Label>
+        <ComboBox x:Name="FilterCB" Grid.Row="7" Grid.Column="1" ItemsSource="{Binding Filters}" SelectedItem="{Binding SelectedFilter, Mode=OneWayToSource}" SelectedIndex="0"></ComboBox>
+
+        <!--- Intensity -->
+        <Label Grid.Row="6" Grid.Column="3" Margin="-5,0,0,0">Intensity:</Label>
+        <ComboBox Grid.Row="7" Grid.Column="3" ItemsSource="{Binding Intensities}" SelectedItem="{Binding SelectedIntensity, Mode=OneWayToSource}" SelectedIndex="0"></ComboBox>
+
+        <!--- Process -->
+        <Button x:Name="Process" Grid.Row="7" Grid.Column="4" Margin="5,0,0,0">Process</Button>
+
         <!-- Source Image -->
-        <Image Source="{Binding Source}" Grid.Row="7" Grid.Column="1"/>
-        
+        <Image Source="{Binding Path=ImgSource}" Grid.Row="10" Grid.Column="1"/>
+
         <!-- Destination Image -->
-        <Image Source="{Binding Source}" Grid.Row="7" Grid.Column="3" Grid.ColumnSpan="2"/>
+        <Image Source="{Binding ImgDestination}" Grid.Row="10" Grid.Column="3" Grid.ColumnSpan="2"/>
+
+        <!-- Error -->
+        <Label x:Name="Error" Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="4" Foreground="Red"></Label>
     </Grid>
 </Window>
