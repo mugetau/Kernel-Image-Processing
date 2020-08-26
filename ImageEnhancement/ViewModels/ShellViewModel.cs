@@ -3,6 +3,8 @@ using System;
 using Microsoft.Win32;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using ImageEnhancement.Models;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 namespace ImageEnhancement.ViewModels
 {
@@ -14,7 +16,7 @@ namespace ImageEnhancement.ViewModels
         private string _imgDestination;
         private string _textDestination;
         private string _error = "";
-        private BindableCollection<FilterBase> _filters = new BindableCollection<FilterBase> {};
+        private BindableCollection<FilterBase> _filters = new BindableCollection<FilterBase> { new LowPassFilter() };
         private BindableCollection<Intensity> _intensities = new BindableCollection<Intensity> { new Intensity(1), new Intensity(2), new Intensity(4) };
         private Intensity _selectedIntensity;
         private FilterBase _selectedFilter;
@@ -136,6 +138,30 @@ namespace ImageEnhancement.ViewModels
                 Error = "Both 'Source' and 'Destination' are necessary!";
                 return;
             }
+
+            LowPassFilter lowp = new LowPassFilter();
+            Bitmap result = new Bitmap(TextSource);
+
+            if (SelectedFilter is FilterBase)
+            {
+                for (int i = 0; i < SelectedIntensity.Value; i++)
+                    result = Calculate.Convolution(result, lowp);
+            }
+
+            string[] splitArray = TextSource.Split('\\');
+            string filePath = TextDestination + '\\' + splitArray[splitArray.Length - 1];
+
+            if (System.IO.File.Exists(filePath))
+            {
+                System.GC.Collect();
+                System.GC.WaitForPendingFinalizers();
+                System.IO.File.Delete(filePath);
+            }
+
+            result.Save(filePath, ImageFormat.Jpeg);
+
+            ImgDestination = filePath;
+            result.Dispose();
 
             Error = "";
             TextSource = "";
