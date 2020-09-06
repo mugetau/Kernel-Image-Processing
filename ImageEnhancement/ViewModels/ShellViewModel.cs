@@ -5,6 +5,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using ImageEnhancement.Models;
 using System.Drawing.Imaging;
 using System.Drawing;
+using System.IO;
 
 namespace ImageEnhancement.ViewModels
 {
@@ -110,8 +111,10 @@ namespace ImageEnhancement.ViewModels
 
         public void Browse()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image files (*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png"
+            };
             if (openFileDialog.ShowDialog() == true)
             {
                 ImgSource = openFileDialog.FileName;
@@ -121,14 +124,18 @@ namespace ImageEnhancement.ViewModels
 
         public void Select()
         {
-            CommonOpenFileDialog dialog = new CommonOpenFileDialog();
-            dialog.InitialDirectory = "C:\\Users";
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+
+            using(CommonOpenFileDialog dialog = new CommonOpenFileDialog())
             {
-                ImgDestination = dialog.FileName;
-                TextDestination = ImgDestination;
-            }
+                dialog.InitialDirectory = "C:\\Users";
+                dialog.IsFolderPicker = true;
+
+                if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+                {
+                    ImgDestination = dialog.FileName;
+                    TextDestination = ImgDestination;
+                }
+            };
         }
 
         public void Process()
@@ -139,24 +146,15 @@ namespace ImageEnhancement.ViewModels
                 return;
             }
 
-            LowPassFilter lowp = new LowPassFilter();
-            Bitmap result = new Bitmap(TextSource);
+            Bitmap result = LoadFrom(TextSource);
 
             if (SelectedFilter is FilterBase)
             {
                 for (int i = 0; i < SelectedIntensity.Value; i++)
-                    result = Calculate.Convolution(result, lowp);
+                    result = Calculate.Convolution(result, SelectedFilter);
             }
 
-            string[] splitArray = TextSource.Split('\\');
-            string filePath = TextDestination + '\\' + splitArray[splitArray.Length - 1];
-
-            if (System.IO.File.Exists(filePath))
-            {
-                System.GC.Collect();
-                System.GC.WaitForPendingFinalizers();
-                System.IO.File.Delete(filePath);
-            }
+            string filePath = GetFilePath();
 
             result.Save(filePath, ImageFormat.Jpeg);
 
@@ -164,8 +162,36 @@ namespace ImageEnhancement.ViewModels
             result.Dispose();
 
             Error = "";
-            TextSource = "";
-            TextDestination = "";
+        }
+
+        private Bitmap LoadFrom(string path)
+        {
+            var bytes = File.ReadAllBytes(path);
+            var ms = new MemoryStream(bytes);
+            return (Bitmap)Image.FromStream(ms);
+        }
+
+        private string GetFilePath()
+        {
+            string[] pathSplitArray = TextSource.Split('\\');
+            // Get "Name" and "Extension"
+            // Ex. "Astesia" ".jpg"
+            string[] newFileNameArray = pathSplitArray[pathSplitArray.Length - 1].Split('.');
+            // Creating unique name: "Name" + "(Current Date)" + "Extension"
+            // Ex. "Astesia" "(06_09_2020 03_32_34)" + ".jpg"
+            string newFileName = newFileNameArray[0] + '_' + $"({Format(DateTime.Now)})" + '.' + newFileNameArray[1];
+            return (TextDestination + '\\' + newFileName);
+        }
+
+        private string Format(DateTime date)
+        {
+            string toReturn = "";
+
+            toReturn = Convert.ToString(date);
+            toReturn = toReturn.Replace('/', '_');
+            toReturn = toReturn.Replace(':', '_');
+
+            return toReturn;
         }
     }
 }
