@@ -33,7 +33,6 @@ namespace ImageEnhancement.Models
             int filterOffset = (filterWidth - 1) / 2;
             int byteOffset;
 
-
             for (int offsetY = filterOffset; offsetY <
                  sourceBitmap.Height - filterOffset; offsetY++)
             {
@@ -42,7 +41,7 @@ namespace ImageEnhancement.Models
                 {
                     byteOffset = offsetY * sourceData.Stride + offsetX * 4;
 
-                    RGB newPixelRGB = CalculateNewPixelRGBValue(filter.Kernel, filterOffset, byteOffset, sourceData, pixelBuffer);
+                    RGB newPixelRGB = CalculateNewPixelRGBValue(filter, filterOffset, byteOffset, sourceData, pixelBuffer);
 
                     newPixelRGB.B = (1 / filter.Scale) * newPixelRGB.B + filter.Bias;
                     newPixelRGB.G = (1 / filter.Scale) * newPixelRGB.G + filter.Bias;
@@ -77,8 +76,6 @@ namespace ImageEnhancement.Models
 
             return resultBitmap;
         }
-
-
         private static Bitmap CreateResultImage(Bitmap originalImage, byte[] resultBuffer)
         {
             Bitmap result = new Bitmap(originalImage.Width, originalImage.Height);
@@ -94,7 +91,8 @@ namespace ImageEnhancement.Models
 
             return result;
         }
-        private static RGB CalculateNewPixelRGBValue(double[,] kernel, int filterOffset, int byteOffset, BitmapData sourceData, byte[] pixelBuffer)
+        private static RGB CalculateNewPixelRGBValue(FilterBase filter, int filterOffset, int byteOffset, BitmapData sourceData, 
+                                                                                                          byte[] pixelBuffer)
         {
             RGB rgb = new RGB();
             int calcOffset;
@@ -105,18 +103,28 @@ namespace ImageEnhancement.Models
                 for (int filterX = -filterOffset;
                      filterX <= filterOffset; filterX++)
                 {
-
                     calcOffset = byteOffset + (filterX * 4) + (filterY * sourceData.Stride);
 
+                    if(filter is ContrastFilter)
+                    {
+                        rgb.B += (double)((((pixelBuffer[calcOffset] / 255.0) - 0.5) * 
+                                 filter.Kernel[filterY + filterOffset, filterX + filterOffset]) + 0.5) * 255.0;
+                        rgb.G += (double)((((pixelBuffer[calcOffset + 1] / 255.0) - 0.5) *
+                                 filter.Kernel[filterY + filterOffset, filterX + filterOffset]) + 0.5) * 255.0;
+                        rgb.R += (double)((((pixelBuffer[calcOffset + 2] / 255.0) - 0.5) *
+                                 filter.Kernel[filterY + filterOffset, filterX + filterOffset]) + 0.5) * 255.0;
+                    }
+                    else
+                    {
+                        rgb.B += (double)(pixelBuffer[calcOffset]) *
+                                 filter.Kernel[filterY + filterOffset, filterX + filterOffset];
 
-                    rgb.B += (double)(pixelBuffer[calcOffset]) *
-                             kernel[filterY + filterOffset, filterX + filterOffset];
+                        rgb.G += (double)(pixelBuffer[calcOffset + 1]) *
+                                  filter.Kernel[filterY + filterOffset, filterX + filterOffset];
 
-                    rgb.G += (double)(pixelBuffer[calcOffset + 1]) *
-                              kernel[filterY + filterOffset, filterX + filterOffset];
-
-                    rgb.R += (double)(pixelBuffer[calcOffset + 2]) *
-                            kernel[filterY + filterOffset, filterX + filterOffset];
+                        rgb.R += (double)(pixelBuffer[calcOffset + 2]) *
+                                filter.Kernel[filterY + filterOffset, filterX + filterOffset];
+                    }
                 }
             }
 

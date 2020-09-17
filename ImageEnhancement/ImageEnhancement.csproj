@@ -83,6 +83,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Models\Calculate.cs" />
+    <Compile Include="Models\ContrastFilter.cs" />
     <Compile Include="Models\FilterBase.cs" />
     <Compile Include="Models\Intensity.cs" />
     <Compile Include="Models\LowPassFilter.cs" />

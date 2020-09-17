@@ -17,7 +17,7 @@ namespace ImageEnhancement.ViewModels
         private string _imgDestination;
         private string _textDestination;
         private string _error = "";
-        private BindableCollection<FilterBase> _filters = new BindableCollection<FilterBase> { new LowPassFilter() };
+        private BindableCollection<FilterBase> _filters = new BindableCollection<FilterBase> { new LowPassFilter(), new ContrastFilter()};
         private BindableCollection<Intensity> _intensities = new BindableCollection<Intensity> { new Intensity(1), new Intensity(2), new Intensity(4) };
         private Intensity _selectedIntensity;
         private FilterBase _selectedFilter;
@@ -146,6 +146,7 @@ namespace ImageEnhancement.ViewModels
                 return;
             }
 
+            Bitmap original = LoadFrom(TextSource);
             Bitmap result = LoadFrom(TextSource);
 
             if (SelectedFilter is FilterBase)
