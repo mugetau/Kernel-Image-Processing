@@ -1,7 +1,7 @@
 # Kernel-Image-Processing
 *"Image noise is random variation of brightness or color information in images, and is usually an aspect of electronic noise".*
 
-This is a C# solution used for reducing noise levels on images by implementing 2 convolutional filters:
+This is a C# solution (bachelor thesis project) used for reducing noise levels on images by implementing 2 convolutional filters:
 * Low-pass filter
 * Contrast filter
 
